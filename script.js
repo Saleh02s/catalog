@@ -69,7 +69,7 @@ const CATEGORIES = [
 ];
 
 const pad = (n) => String(n).padStart(2, '0');
-const sheetHead = (pageNo, label = '166 · Service Catalog') =>
+const sheetHead = (pageNo, label = 'Available Services') =>
   `<div class="sheet-head"><span class="sh-left">${label}</span><span class="sh-right">Page ${pad(pageNo)}</span></div>`;
 
 /* ---------- Face (single page) HTML builders ---------- */
@@ -155,7 +155,6 @@ function openerHTML(cat, pageNo, num) {
         <div class="opener-info">
           <span class="oi-eyebrow">${cat.tagline}</span>
           <p class="oi-desc">${cat.desc}</p>
-          <button class="cta primary" type="button" data-cta="request">Request service ${ICONS.arrow}</button>
         </div>
       </div>
     </div>`;
@@ -175,15 +174,7 @@ function servicesHTML(cat, pageNo) {
   return `
     <div class="page-inner sheet">
       ${sheetHead(pageNo)}
-      <div class="svc-head">
-        <span class="page-eyebrow">What we offer</span>
-        <h3 class="svc-title">Available Services</h3>
-      </div>
-      <ul class="svc-list">${rows}</ul>
-      <div class="svc-foot">
-        <span>Prices on request · ${cat.services.length} service${cat.services.length > 1 ? 's' : ''}</span>
-        <button class="cta ghost sm" type="button" data-cta="contact">Contact us</button>
-      </div>
+      <ul class="svc-list expanded">${rows}</ul>
     </div>`;
 }
 
@@ -244,11 +235,22 @@ for (let i = 0; i < LEAF_COUNT; i++) {
   leaves.push(leaf);
 }
 
+const mobileView = document.createElement('div');
+mobileView.className = 'mobile-page';
+book.appendChild(mobileView);
+
+const mobileFlipLayer = document.createElement('div');
+mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+book.appendChild(mobileFlipLayer);
+
 /* ---------- Flipbook engine ---------- */
 const N = LEAF_COUNT;
 let current = 0;          // flipped leaves (0 = closed on cover)
+let mobilePage = 0;       // visible face index in single-page phone mode
 let animating = false;
 const FLIP_MS = 760;
+const SLIDE_MS = 420;
+const MOBILE_FLIP_MS = 760;
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -264,16 +266,50 @@ function updateZ() {
   });
 }
 
+function isSinglePageView() {
+  return window.matchMedia('(max-width: 760px)').matches;
+}
+
 function updatePosition(state) {
+  const single = isSinglePageView();
+  book.classList.toggle('mobile-single', single);
   book.classList.toggle('open', state > 0 && state < N);
   let shift = 0;
-  if (state <= 0) shift = -25;
-  else if (state >= N) shift = 25;
+  if (!single) {
+    if (state <= 0) shift = -25;
+    else if (state >= N) shift = 25;
+  }
   book.style.transform = `translateX(${shift}%)`;
 }
 
+function renderFace(el, pageIndex, extraClass = '') {
+  const face = faces[pageIndex];
+  el.className = `mobile-page ${face.cls}${extraClass ? ` ${extraClass}` : ''}`;
+  el.innerHTML = face.html;
+}
+
+function renderMobilePage(animationClass = '') {
+  renderFace(mobileView, mobilePage, animationClass);
+  if (!animationClass || prefersReducedMotion()) return;
+  mobileView.addEventListener('animationend', () => {
+    mobileView.classList.remove(animationClass);
+  }, { once: true });
+}
+
+function syncMobileFaces() {
+  renderMobilePage();
+}
+
 function updateUI() {
+  if (isSinglePageView()) {
+    pageNow.textContent = String(mobilePage + 1);
+    pageTotal.textContent = String(faces.length);
+    prevBtn.disabled = mobilePage <= 0;
+    nextBtn.disabled = mobilePage >= faces.length - 1;
+    return;
+  }
   pageNow.textContent = String(current + 1);
+  pageTotal.textContent = String(N + 1);
   prevBtn.disabled = current <= 0;
   nextBtn.disabled = current >= N;
 }
@@ -294,12 +330,58 @@ function stepBack() {
 }
 function finalize() {
   leaves.forEach((l) => l.classList.remove('flipping'));
-  updateZ();
+  if (!isSinglePageView()) updateZ();
   animating = false;
   updateUI();
 }
 
+function mobileSlide(dir) {
+  mobilePage += dir;
+  renderMobilePage(dir > 0 ? 'mobile-slide-next' : 'mobile-slide-prev');
+}
+
+function mobileFlip(dir) {
+  const fromPage = mobilePage;
+  mobilePage += dir;
+  renderMobilePage();
+  renderFace(mobileFlipLayer, fromPage, dir > 0 ? 'mobile-turn-next' : 'mobile-turn-prev');
+  if (prefersReducedMotion()) {
+    mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+    mobileFlipLayer.innerHTML = '';
+    return;
+  }
+  mobileFlipLayer.addEventListener('animationend', () => {
+    mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+    mobileFlipLayer.innerHTML = '';
+  }, { once: true });
+}
+
+function nextMobile() {
+  if (animating || mobilePage >= faces.length - 1) return;
+  animating = true;
+  const currentPageNumber = mobilePage + 1;
+  const duration = currentPageNumber % 2 === 0 ? MOBILE_FLIP_MS : SLIDE_MS;
+  if (currentPageNumber % 2 === 0) mobileFlip(1);
+  else mobileSlide(1);
+  updatePosition(current);
+  updateUI();
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : duration) + 40);
+}
+
+function prevMobile() {
+  if (animating || mobilePage <= 0) return;
+  animating = true;
+  const currentPageNumber = mobilePage + 1;
+  const duration = currentPageNumber % 2 === 1 ? MOBILE_FLIP_MS : SLIDE_MS;
+  if (currentPageNumber % 2 === 1) mobileFlip(-1);
+  else mobileSlide(-1);
+  updatePosition(current);
+  updateUI();
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : duration) + 40);
+}
+
 function next() {
+  if (isSinglePageView()) { nextMobile(); return; }
   if (animating || current >= N) return;
   animating = true;
   stepForward();
@@ -308,6 +390,7 @@ function next() {
   setTimeout(finalize, (prefersReducedMotion() ? 30 : FLIP_MS) + 40);
 }
 function prev() {
+  if (isSinglePageView()) { prevMobile(); return; }
   if (animating || current <= 0) return;
   animating = true;
   stepBack();
@@ -316,6 +399,15 @@ function prev() {
   setTimeout(finalize, (prefersReducedMotion() ? 30 : FLIP_MS) + 40);
 }
 function jumpToLeaf(target) {
+  if (isSinglePageView()) {
+    const targetPage = Math.max(0, Math.min(faces.length - 1, target * 2 - 1));
+    if (animating || targetPage === mobilePage) return;
+    mobilePage = targetPage;
+    syncMobileFaces();
+    updatePosition(current);
+    updateUI();
+    return;
+  }
   target = Math.max(0, Math.min(N, target));
   if (animating || target === current) return;
   animating = true;
@@ -355,15 +447,26 @@ book.addEventListener('click', (e) => {
   }
   const face = e.target.closest('.leaf-face');
   if (!face) return;
+  const rect = book.getBoundingClientRect();
+  if (isSinglePageView()) {
+    if (e.clientX < rect.left + rect.width / 2) prev(); else next();
+    return;
+  }
   if (current <= 0) { next(); return; }
   if (current >= N) { prev(); return; }
-  const rect = book.getBoundingClientRect();
   if (e.clientX < rect.left + rect.width / 2) prev(); else next();
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') next();
   else if (e.key === 'ArrowLeft') prev();
+});
+
+window.addEventListener('resize', () => {
+  if (isSinglePageView()) syncMobileFaces();
+  else updateZ();
+  updatePosition(current);
+  updateUI();
 });
 
 let touchX = null, touchY = null;
@@ -390,6 +493,7 @@ function showToast(msg) {
 }
 
 /* ---------- Init ---------- */
-updateZ();
+if (isSinglePageView()) syncMobileFaces();
+else updateZ();
 updatePosition(current);
 updateUI();
