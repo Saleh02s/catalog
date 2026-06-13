@@ -26,43 +26,36 @@ const ICONS = {
 const CATEGORIES = [
   {
     id: 'furniture', name: 'Furniture Services', icon: ICONS.furniture,
-    tagline: 'Assembled, repaired & packed with care',
     desc: 'From flat-pack assembly to careful repairs and packing, our furniture experts handle every piece with precision.',
     services: ['Furniture assembly', 'Furniture disassembly', 'Furniture repair', 'Furniture packing', 'Assembly of cargo furniture'],
   },
   {
     id: 'plumbing', name: 'Plumbing Services', icon: ICONS.plumbing,
-    tagline: 'Fast, clean & reliable plumbing',
     desc: 'Reliable plumbing solutions for your home and office — done right the first time, with tidy workmanship.',
     services: ['Leak detection & repair', 'Faucet & tap installation', 'Pipe installation & replacement', 'Drain unclogging', 'Bathroom & kitchen fittings'],
   },
   {
     id: 'ac', name: 'Air Conditioner Services', icon: ICONS.ac,
-    tagline: 'Cool comfort, fully serviced',
     desc: 'Full air-conditioning support — installation, maintenance, relocation and repair to keep your space perfectly cool.',
     services: ['Air conditioner disassembly', 'Air conditioner assembly / installation', 'Filter replacement', 'Air conditioner repair', 'Air conditioner cleaning / washing', 'Relocation: disassemble & re-install at a new address'],
   },
   {
     id: 'appliance', name: 'Small Household Appliances', icon: ICONS.appliance,
-    tagline: 'Everyday helpers, repaired',
     desc: 'Bring your everyday helpers back to life. We diagnose and repair a wide range of small household appliances.',
     services: ['Repair of small household appliances'],
   },
   {
     id: 'electrical', name: 'Electrical Services', icon: ICONS.electrical,
-    tagline: 'Safe, certified-quality wiring',
     desc: 'Safe, certified-quality electrical work — from cabling to lighting fixtures, handled with care.',
     services: ['Electrical cable installation', 'Chandelier repair', 'Chandelier assembly', 'Chandelier installation'],
   },
   {
     id: 'boiler', name: 'Combi Boiler Services', icon: ICONS.boiler,
-    tagline: 'Warmth you can rely on',
     desc: 'We install, service and clean combi boiler systems and radiators so your home stays warm all season.',
     services: ['Combi boiler system installation', 'Combi boiler repair', 'Cleaning / washing of radiators & boiler system'],
   },
   {
     id: 'packing', name: 'Packing / Boxing Services', icon: ICONS.packing,
-    tagline: 'Packed safe, ready to move',
     desc: 'Moving home or office? We pack, protect and organize your belongings for a safe, stress-free move.',
     services: ['Packing belongings into boxes', 'Preparing items for moving', 'Organizing packed items', 'Safe packaging for transportation'],
   },
@@ -159,7 +152,6 @@ function openerHTML(cat, pageNo, num) {
           <span class="photo-tag">Photo</span>
         </div>
         <div class="opener-info">
-          <span class="oi-eyebrow">${cat.tagline}</span>
           <p class="oi-desc">${cat.desc}</p>
         </div>
       </div>

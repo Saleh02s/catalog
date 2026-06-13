@@ -279,7 +279,6 @@ body {
   background: var(--black); color: #fff;
   display: flex; flex-direction: column; gap: clamp(6px, 1.6cqh, 10px);
 }
-.oi-eyebrow { font-size: clamp(10px, 2.8cqw, 13px); font-weight: 700; letter-spacing: 1px; color: var(--yellow); text-transform: uppercase; }
 .oi-desc { font-size: clamp(13px, 3.8cqw, 18px); line-height: 1.5; color: #d9d8da; margin: 0; }
 
 /* =====================================================
