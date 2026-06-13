@@ -302,7 +302,13 @@ function renderMobilePage(animationClass = '') {
   }, { once: true });
 }
 
+function clearMobileFlipLayer() {
+  mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+  mobileFlipLayer.innerHTML = '';
+}
+
 function syncMobileFaces() {
+  clearMobileFlipLayer();
   renderMobilePage();
 }
 
@@ -336,7 +342,8 @@ function stepBack() {
 }
 function finalize() {
   leaves.forEach((l) => l.classList.remove('flipping'));
-  if (!isSinglePageView()) updateZ();
+  if (isSinglePageView()) clearMobileFlipLayer();
+  else updateZ();
   animating = false;
   updateUI();
 }
@@ -350,16 +357,13 @@ function mobileFlip(dir) {
   const fromPage = mobilePage;
   mobilePage += dir;
   renderMobilePage();
-  renderFace(mobileFlipLayer, fromPage, dir > 0 ? 'mobile-turn-next' : 'mobile-turn-prev');
+  renderFace(mobileFlipLayer, fromPage, `mobile-flip-layer ${dir > 0 ? 'mobile-turn-next' : 'mobile-turn-prev'}`);
   if (prefersReducedMotion()) {
-    mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
-    mobileFlipLayer.innerHTML = '';
+    clearMobileFlipLayer();
     return;
   }
-  mobileFlipLayer.addEventListener('animationend', () => {
-    mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
-    mobileFlipLayer.innerHTML = '';
-  }, { once: true });
+  mobileFlipLayer.addEventListener('animationend', clearMobileFlipLayer, { once: true });
+  setTimeout(clearMobileFlipLayer, MOBILE_FLIP_MS + 120);
 }
 
 function nextMobile() {
@@ -470,6 +474,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('resize', () => {
+  clearMobileFlipLayer();
   if (isSinglePageView()) syncMobileFaces();
   else updateZ();
   updatePosition(current);

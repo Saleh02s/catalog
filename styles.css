@@ -404,12 +404,23 @@ body {
   .mobile-flip-layer.mobile-turn-prev { display: block; }
   .mobile-flip-layer.mobile-turn-next { animation: mobileTurnNext 0.76s var(--flip-ease) forwards; }
   .mobile-flip-layer.mobile-turn-prev { animation: mobileTurnPrev 0.76s var(--flip-ease) forwards; }
-  .page-inner { padding: clamp(18px, 6vw, 30px); }
-  .toc-layout { grid-template-columns: 1fr; gap: 12px; }
-  .toc-intro { padding: 0; gap: 12px; }
+  .page-inner { padding: clamp(14px, 4.8vw, 24px); }
+  .toc-sheet { gap: 8px; }
+  .toc-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 8px; }
+  .toc-intro { padding: 0; gap: 6px; justify-content: start; }
+  .toc-logo { font-size: 9px; gap: 7px; }
+  .toc-logo .brand-badge { font-size: 15px; padding: 2px 8px; border-radius: 9px; }
+  .toc-title { font-size: clamp(24px, 9vw, 34px); margin: 4px 0; line-height: 0.92; }
+  .toc-copy { font-size: clamp(11px, 3.5vw, 14px); line-height: 1.16; max-width: 100%; }
+  .toc-note { display: none; }
   .toc-grid.featured,
-  .toc-grid.catalog { grid-template-columns: 1fr; }
-  .toc-title { font-size: clamp(28px, 12vw, 44px); }
+  .toc-grid.catalog { grid-template-columns: 1fr; gap: 7px; }
+  .toc-card { padding: 8px; gap: 3px; }
+  .tc-art { min-height: 30%; }
+  .tc-icon { width: clamp(34px, 10vw, 52px); height: clamp(34px, 10vw, 52px); }
+  .tc-name { font-size: clamp(9px, 2.9vw, 12px); line-height: 1.05; }
+  .tc-desc { font-size: clamp(7px, 2.3vw, 9px); -webkit-line-clamp: 1; }
+  .tc-go { padding: 3px 10px; font-size: clamp(8px, 2.5vw, 10px); }
 }
 @keyframes mobileSlideNext {
   from { transform: translateX(110%); }
