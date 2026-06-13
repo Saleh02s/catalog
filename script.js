@@ -245,7 +245,7 @@ let current = 0;          // flipped leaves (0 = closed on cover)
 let mobilePage = 0;       // visible face index in single-page phone mode
 let animating = false;
 const FLIP_MS = 760;
-const SLIDE_MS = 360;
+const SLIDE_MS = 420;
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -327,16 +327,6 @@ function finalize() {
   updateUI();
 }
 
-function mobileFlipForward() {
-  mobilePage += 1;
-  renderMobilePage('mobile-flip-next');
-}
-
-function mobileFlipBack() {
-  mobilePage -= 1;
-  renderMobilePage('mobile-flip-prev');
-}
-
 function mobileSlide(dir) {
   mobilePage += dir;
   renderMobilePage(dir > 0 ? 'mobile-slide-next' : 'mobile-slide-prev');
@@ -345,21 +335,19 @@ function mobileSlide(dir) {
 function nextMobile() {
   if (animating || mobilePage >= faces.length - 1) return;
   animating = true;
-  if (mobilePage % 2 === 0) mobileFlipForward();
-  else mobileSlide(1);
+  mobileSlide(1);
   updatePosition(current);
   updateUI();
-  setTimeout(finalize, (prefersReducedMotion() ? 30 : (mobilePage % 2 === 0 ? SLIDE_MS : FLIP_MS)) + 40);
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : SLIDE_MS) + 40);
 }
 
 function prevMobile() {
   if (animating || mobilePage <= 0) return;
   animating = true;
-  if (mobilePage % 2 === 1) mobileFlipBack();
-  else mobileSlide(-1);
+  mobileSlide(-1);
   updatePosition(current);
   updateUI();
-  setTimeout(finalize, (prefersReducedMotion() ? 30 : (mobilePage % 2 === 1 ? SLIDE_MS : FLIP_MS)) + 40);
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : SLIDE_MS) + 40);
 }
 
 function next() {
