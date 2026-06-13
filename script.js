@@ -235,6 +235,10 @@ for (let i = 0; i < LEAF_COUNT; i++) {
   leaves.push(leaf);
 }
 
+const mobileView = document.createElement('div');
+mobileView.className = 'mobile-page';
+book.appendChild(mobileView);
+
 /* ---------- Flipbook engine ---------- */
 const N = LEAF_COUNT;
 let current = 0;          // flipped leaves (0 = closed on cover)
@@ -261,10 +265,6 @@ function isSinglePageView() {
   return window.matchMedia('(max-width: 760px)').matches;
 }
 
-function faceToLeaf(faceIndex) {
-  return Math.floor(faceIndex / 2);
-}
-
 function updatePosition(state) {
   const single = isSinglePageView();
   book.classList.toggle('mobile-single', single);
@@ -277,13 +277,19 @@ function updatePosition(state) {
   book.style.transform = `translateX(${shift}%)`;
 }
 
+function renderMobilePage(animationClass = '') {
+  const face = faces[mobilePage];
+  mobileView.className = `mobile-page ${face.cls}`;
+  mobileView.innerHTML = face.html;
+  if (!animationClass || prefersReducedMotion()) return;
+  mobileView.classList.add(animationClass);
+  mobileView.addEventListener('animationend', () => {
+    mobileView.classList.remove(animationClass);
+  }, { once: true });
+}
+
 function syncMobileFaces() {
-  const activeLeaf = faceToLeaf(mobilePage);
-  leaves.forEach((leaf, i) => {
-    leaf.classList.toggle('mobile-active', i === activeLeaf);
-    leaf.classList.toggle('flipped', i === activeLeaf && mobilePage % 2 === 1);
-    leaf.style.zIndex = i === activeLeaf ? String(N + 5) : String(N - i);
-  });
+  renderMobilePage();
 }
 
 function updateUI() {
@@ -315,39 +321,25 @@ function stepBack() {
   requestAnimationFrame(() => leaf.classList.remove('flipped'));
 }
 function finalize() {
-  leaves.forEach((l) => l.classList.remove('flipping', 'mobile-slide-in-next', 'mobile-slide-out-next', 'mobile-slide-in-prev', 'mobile-slide-out-prev'));
-  if (isSinglePageView()) syncMobileFaces();
-  else updateZ();
+  leaves.forEach((l) => l.classList.remove('flipping'));
+  if (!isSinglePageView()) updateZ();
   animating = false;
   updateUI();
 }
 
 function mobileFlipForward() {
-  const leaf = leaves[faceToLeaf(mobilePage)];
-  leaf.style.zIndex = String(N + 5);
-  leaf.classList.add('mobile-active', 'flipping');
-  requestAnimationFrame(() => leaf.classList.add('flipped'));
   mobilePage += 1;
+  renderMobilePage('mobile-flip-next');
 }
 
 function mobileFlipBack() {
-  const leaf = leaves[faceToLeaf(mobilePage)];
-  leaf.style.zIndex = String(N + 5);
-  leaf.classList.add('mobile-active', 'flipping');
-  requestAnimationFrame(() => leaf.classList.remove('flipped'));
   mobilePage -= 1;
+  renderMobilePage('mobile-flip-prev');
 }
 
 function mobileSlide(dir) {
-  const fromLeaf = leaves[faceToLeaf(mobilePage)];
-  const toPage = mobilePage + dir;
-  const toLeaf = leaves[faceToLeaf(toPage)];
-  fromLeaf.classList.add(dir > 0 ? 'mobile-slide-out-next' : 'mobile-slide-out-prev');
-  toLeaf.classList.add('mobile-active', dir > 0 ? 'mobile-slide-in-next' : 'mobile-slide-in-prev');
-  toLeaf.classList.toggle('flipped', toPage % 2 === 1);
-  fromLeaf.style.zIndex = String(N + 4);
-  toLeaf.style.zIndex = String(N + 5);
-  mobilePage = toPage;
+  mobilePage += dir;
+  renderMobilePage(dir > 0 ? 'mobile-slide-next' : 'mobile-slide-prev');
 }
 
 function nextMobile() {
