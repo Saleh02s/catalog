@@ -358,15 +358,41 @@ body {
   }
   .book.open::before,
   .book.open::after { display: none; }
-  .leaf { left: 0; width: 100%; }
+  .leaf { left: 0; width: 100%; opacity: 0; pointer-events: none; transition: transform var(--flip-speed) var(--flip-ease), opacity 0.18s ease; }
+  .leaf.mobile-active,
+  .leaf.mobile-slide-in-next,
+  .leaf.mobile-slide-in-prev,
+  .leaf.mobile-slide-out-next,
+  .leaf.mobile-slide-out-prev { opacity: 1; pointer-events: auto; }
+  .leaf.mobile-slide-in-next { transform: translateX(110%); animation: mobileSlideInNext 0.36s ease forwards; }
+  .leaf.mobile-slide-out-next { transform: translateX(0); animation: mobileSlideOutNext 0.36s ease forwards; }
+  .leaf.mobile-slide-in-prev { transform: translateX(-110%); animation: mobileSlideInPrev 0.36s ease forwards; }
+  .leaf.mobile-slide-out-prev { transform: translateX(0); animation: mobileSlideOutPrev 0.36s ease forwards; }
+  .leaf.flipped.mobile-slide-in-next { transform: translateX(110%) rotateY(-180deg); animation: mobileSlideInNextFlipped 0.36s ease forwards; }
+  .leaf.flipped.mobile-slide-out-next { transform: rotateY(-180deg); animation: mobileSlideOutNextFlipped 0.36s ease forwards; }
+  .leaf.flipped.mobile-slide-in-prev { transform: translateX(-110%) rotateY(-180deg); animation: mobileSlideInPrevFlipped 0.36s ease forwards; }
+  .leaf.flipped.mobile-slide-out-prev { transform: rotateY(-180deg); animation: mobileSlideOutPrevFlipped 0.36s ease forwards; }
   .leaf-face { border-radius: var(--radius-md); }
   .leaf-face::before { display: none; }
   .page-inner { padding: clamp(18px, 6vw, 30px); }
 }
+@keyframes mobileSlideInNext { to { transform: translateX(0); } }
+@keyframes mobileSlideOutNext { to { transform: translateX(-110%); } }
+@keyframes mobileSlideInPrev { to { transform: translateX(0); } }
+@keyframes mobileSlideOutPrev { to { transform: translateX(110%); } }
+@keyframes mobileSlideInNextFlipped { to { transform: rotateY(-180deg); } }
+@keyframes mobileSlideOutNextFlipped { to { transform: translateX(-110%) rotateY(-180deg); } }
+@keyframes mobileSlideInPrevFlipped { to { transform: rotateY(-180deg); } }
+@keyframes mobileSlideOutPrevFlipped { to { transform: translateX(110%) rotateY(-180deg); } }
+
 @media (max-width: 480px) {
   .nav-btn { width: 46px; height: 46px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .leaf, .book { transition-duration: 0.001s; }
+  .leaf.mobile-slide-in-next,
+  .leaf.mobile-slide-out-next,
+  .leaf.mobile-slide-in-prev,
+  .leaf.mobile-slide-out-prev { animation-duration: 0.001s; }
   .cover-hint svg { animation: none; }
 }

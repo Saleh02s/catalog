@@ -238,8 +238,10 @@ for (let i = 0; i < LEAF_COUNT; i++) {
 /* ---------- Flipbook engine ---------- */
 const N = LEAF_COUNT;
 let current = 0;          // flipped leaves (0 = closed on cover)
+let mobilePage = 0;       // visible face index in single-page phone mode
 let animating = false;
 const FLIP_MS = 760;
+const SLIDE_MS = 360;
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -259,18 +261,41 @@ function isSinglePageView() {
   return window.matchMedia('(max-width: 760px)').matches;
 }
 
+function faceToLeaf(faceIndex) {
+  return Math.floor(faceIndex / 2);
+}
+
 function updatePosition(state) {
+  const single = isSinglePageView();
+  book.classList.toggle('mobile-single', single);
   book.classList.toggle('open', state > 0 && state < N);
   let shift = 0;
-  if (!isSinglePageView()) {
+  if (!single) {
     if (state <= 0) shift = -25;
     else if (state >= N) shift = 25;
   }
   book.style.transform = `translateX(${shift}%)`;
 }
 
+function syncMobileFaces() {
+  const activeLeaf = faceToLeaf(mobilePage);
+  leaves.forEach((leaf, i) => {
+    leaf.classList.toggle('mobile-active', i === activeLeaf);
+    leaf.classList.toggle('flipped', i === activeLeaf && mobilePage % 2 === 1);
+    leaf.style.zIndex = i === activeLeaf ? String(N + 5) : String(N - i);
+  });
+}
+
 function updateUI() {
+  if (isSinglePageView()) {
+    pageNow.textContent = String(mobilePage + 1);
+    pageTotal.textContent = String(faces.length);
+    prevBtn.disabled = mobilePage <= 0;
+    nextBtn.disabled = mobilePage >= faces.length - 1;
+    return;
+  }
   pageNow.textContent = String(current + 1);
+  pageTotal.textContent = String(N + 1);
   prevBtn.disabled = current <= 0;
   nextBtn.disabled = current >= N;
 }
@@ -290,13 +315,63 @@ function stepBack() {
   requestAnimationFrame(() => leaf.classList.remove('flipped'));
 }
 function finalize() {
-  leaves.forEach((l) => l.classList.remove('flipping'));
-  updateZ();
+  leaves.forEach((l) => l.classList.remove('flipping', 'mobile-slide-in-next', 'mobile-slide-out-next', 'mobile-slide-in-prev', 'mobile-slide-out-prev'));
+  if (isSinglePageView()) syncMobileFaces();
+  else updateZ();
   animating = false;
   updateUI();
 }
 
+function mobileFlipForward() {
+  const leaf = leaves[faceToLeaf(mobilePage)];
+  leaf.style.zIndex = String(N + 5);
+  leaf.classList.add('mobile-active', 'flipping');
+  requestAnimationFrame(() => leaf.classList.add('flipped'));
+  mobilePage += 1;
+}
+
+function mobileFlipBack() {
+  const leaf = leaves[faceToLeaf(mobilePage)];
+  leaf.style.zIndex = String(N + 5);
+  leaf.classList.add('mobile-active', 'flipping');
+  requestAnimationFrame(() => leaf.classList.remove('flipped'));
+  mobilePage -= 1;
+}
+
+function mobileSlide(dir) {
+  const fromLeaf = leaves[faceToLeaf(mobilePage)];
+  const toPage = mobilePage + dir;
+  const toLeaf = leaves[faceToLeaf(toPage)];
+  fromLeaf.classList.add(dir > 0 ? 'mobile-slide-out-next' : 'mobile-slide-out-prev');
+  toLeaf.classList.add('mobile-active', dir > 0 ? 'mobile-slide-in-next' : 'mobile-slide-in-prev');
+  toLeaf.classList.toggle('flipped', toPage % 2 === 1);
+  fromLeaf.style.zIndex = String(N + 4);
+  toLeaf.style.zIndex = String(N + 5);
+  mobilePage = toPage;
+}
+
+function nextMobile() {
+  if (animating || mobilePage >= faces.length - 1) return;
+  animating = true;
+  if (mobilePage % 2 === 0) mobileFlipForward();
+  else mobileSlide(1);
+  updatePosition(current);
+  updateUI();
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : (mobilePage % 2 === 0 ? SLIDE_MS : FLIP_MS)) + 40);
+}
+
+function prevMobile() {
+  if (animating || mobilePage <= 0) return;
+  animating = true;
+  if (mobilePage % 2 === 1) mobileFlipBack();
+  else mobileSlide(-1);
+  updatePosition(current);
+  updateUI();
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : (mobilePage % 2 === 1 ? SLIDE_MS : FLIP_MS)) + 40);
+}
+
 function next() {
+  if (isSinglePageView()) { nextMobile(); return; }
   if (animating || current >= N) return;
   animating = true;
   stepForward();
@@ -305,6 +380,7 @@ function next() {
   setTimeout(finalize, (prefersReducedMotion() ? 30 : FLIP_MS) + 40);
 }
 function prev() {
+  if (isSinglePageView()) { prevMobile(); return; }
   if (animating || current <= 0) return;
   animating = true;
   stepBack();
@@ -313,6 +389,15 @@ function prev() {
   setTimeout(finalize, (prefersReducedMotion() ? 30 : FLIP_MS) + 40);
 }
 function jumpToLeaf(target) {
+  if (isSinglePageView()) {
+    const targetPage = Math.max(0, Math.min(faces.length - 1, target * 2 - 1));
+    if (animating || targetPage === mobilePage) return;
+    mobilePage = targetPage;
+    syncMobileFaces();
+    updatePosition(current);
+    updateUI();
+    return;
+  }
   target = Math.max(0, Math.min(N, target));
   if (animating || target === current) return;
   animating = true;
@@ -352,9 +437,13 @@ book.addEventListener('click', (e) => {
   }
   const face = e.target.closest('.leaf-face');
   if (!face) return;
+  const rect = book.getBoundingClientRect();
+  if (isSinglePageView()) {
+    if (e.clientX < rect.left + rect.width / 2) prev(); else next();
+    return;
+  }
   if (current <= 0) { next(); return; }
   if (current >= N) { prev(); return; }
-  const rect = book.getBoundingClientRect();
   if (e.clientX < rect.left + rect.width / 2) prev(); else next();
 });
 
@@ -363,7 +452,12 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowLeft') prev();
 });
 
-window.addEventListener('resize', () => updatePosition(current));
+window.addEventListener('resize', () => {
+  if (isSinglePageView()) syncMobileFaces();
+  else updateZ();
+  updatePosition(current);
+  updateUI();
+});
 
 let touchX = null, touchY = null;
 book.addEventListener('touchstart', (e) => {
@@ -389,6 +483,7 @@ function showToast(msg) {
 }
 
 /* ---------- Init ---------- */
-updateZ();
+if (isSinglePageView()) syncMobileFaces();
+else updateZ();
 updatePosition(current);
 updateUI();
