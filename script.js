@@ -239,6 +239,10 @@ const mobileView = document.createElement('div');
 mobileView.className = 'mobile-page';
 book.appendChild(mobileView);
 
+const mobileFlipLayer = document.createElement('div');
+mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+book.appendChild(mobileFlipLayer);
+
 /* ---------- Flipbook engine ---------- */
 const N = LEAF_COUNT;
 let current = 0;          // flipped leaves (0 = closed on cover)
@@ -278,12 +282,15 @@ function updatePosition(state) {
   book.style.transform = `translateX(${shift}%)`;
 }
 
+function renderFace(el, pageIndex, extraClass = '') {
+  const face = faces[pageIndex];
+  el.className = `mobile-page ${face.cls}${extraClass ? ` ${extraClass}` : ''}`;
+  el.innerHTML = face.html;
+}
+
 function renderMobilePage(animationClass = '') {
-  const face = faces[mobilePage];
-  mobileView.className = `mobile-page ${face.cls}`;
-  mobileView.innerHTML = face.html;
+  renderFace(mobileView, mobilePage, animationClass);
   if (!animationClass || prefersReducedMotion()) return;
-  mobileView.classList.add(animationClass);
   mobileView.addEventListener('animationend', () => {
     mobileView.classList.remove(animationClass);
   }, { once: true });
@@ -334,8 +341,19 @@ function mobileSlide(dir) {
 }
 
 function mobileFlip(dir) {
+  const fromPage = mobilePage;
   mobilePage += dir;
-  renderMobilePage(dir > 0 ? 'mobile-flip-next' : 'mobile-flip-prev');
+  renderMobilePage();
+  renderFace(mobileFlipLayer, fromPage, dir > 0 ? 'mobile-turn-next' : 'mobile-turn-prev');
+  if (prefersReducedMotion()) {
+    mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+    mobileFlipLayer.innerHTML = '';
+    return;
+  }
+  mobileFlipLayer.addEventListener('animationend', () => {
+    mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
+    mobileFlipLayer.innerHTML = '';
+  }, { once: true });
 }
 
 function nextMobile() {
