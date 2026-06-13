@@ -69,7 +69,7 @@ const CATEGORIES = [
 ];
 
 const pad = (n) => String(n).padStart(2, '0');
-const sheetHead = (pageNo, label = '166 · Service Catalog') =>
+const sheetHead = (pageNo, label = 'Available Services') =>
   `<div class="sheet-head"><span class="sh-left">${label}</span><span class="sh-right">Page ${pad(pageNo)}</span></div>`;
 
 /* ---------- Face (single page) HTML builders ---------- */
@@ -155,7 +155,6 @@ function openerHTML(cat, pageNo, num) {
         <div class="opener-info">
           <span class="oi-eyebrow">${cat.tagline}</span>
           <p class="oi-desc">${cat.desc}</p>
-          <button class="cta primary" type="button" data-cta="request">Request service ${ICONS.arrow}</button>
         </div>
       </div>
     </div>`;
@@ -175,15 +174,7 @@ function servicesHTML(cat, pageNo) {
   return `
     <div class="page-inner sheet">
       ${sheetHead(pageNo)}
-      <div class="svc-head">
-        <span class="page-eyebrow">What we offer</span>
-        <h3 class="svc-title">Available Services</h3>
-      </div>
-      <ul class="svc-list">${rows}</ul>
-      <div class="svc-foot">
-        <span>Prices on request · ${cat.services.length} service${cat.services.length > 1 ? 's' : ''}</span>
-        <button class="cta ghost sm" type="button" data-cta="contact">Contact us</button>
-      </div>
+      <ul class="svc-list expanded">${rows}</ul>
     </div>`;
 }
 
@@ -264,11 +255,17 @@ function updateZ() {
   });
 }
 
+function isSinglePageView() {
+  return window.matchMedia('(max-width: 760px)').matches;
+}
+
 function updatePosition(state) {
   book.classList.toggle('open', state > 0 && state < N);
   let shift = 0;
-  if (state <= 0) shift = -25;
-  else if (state >= N) shift = 25;
+  if (!isSinglePageView()) {
+    if (state <= 0) shift = -25;
+    else if (state >= N) shift = 25;
+  }
   book.style.transform = `translateX(${shift}%)`;
 }
 
@@ -365,6 +362,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') next();
   else if (e.key === 'ArrowLeft') prev();
 });
+
+window.addEventListener('resize', () => updatePosition(current));
 
 let touchX = null, touchY = null;
 book.addEventListener('touchstart', (e) => {
