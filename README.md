@@ -19,7 +19,7 @@ like flipping through a real printed magazine — built with plain HTML, CSS and
 - **Multiple ways to navigate:** Previous/Next buttons, the Contents button,
   keyboard arrow keys (← →), and swipe on touch devices.
 - **Fully responsive** and mobile-friendly.
-- **Brand colors:** orange (main) with yellow, black, white and gray.
+- **Brand colors:** yellow (main) with black and warm off-white paper.
 
 ## How to run locally
 
@@ -63,5 +63,10 @@ Each entry has a `name`, `desc`, an `icon`, and a `services` list — edit those
 what appears in the catalog. Pages are generated automatically from this data and paired
 into two-page "leaves", so the Table of Contents, spreads, and page numbers stay in sync.
 
-To swap the image placeholders for real photos, replace the `.photo` placeholder blocks
-in `serviceHTML()` (in `script.js`) with `<img>` tags pointing to your image files.
+### Photos
+
+Photos live in the `images/` folder. Each category points at a file via its
+`image:` field in `CATEGORIES` (e.g. `images/furniture.jpg`), and that photo is
+shown on the contents card, the category opener page, and the service rows.
+Missing files fall back to the line icon automatically. See
+[`images/README.md`](images/README.md) for the full filename list and tips.

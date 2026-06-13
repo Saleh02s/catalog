@@ -26,33 +26,46 @@ const ICONS = {
 const CATEGORIES = [
   {
     id: 'furniture', name: 'Furniture Services', icon: ICONS.furniture,
+    image: 'images/furniture.jpg',
     services: ['Furniture assembly', 'Furniture disassembly', 'Furniture repair', 'Furniture packing', 'Assembly of cargo furniture'],
   },
   {
     id: 'plumbing', name: 'Plumbing Services', icon: ICONS.plumbing,
+    image: 'images/plumbing.jpg',
     services: ['Leak detection & repair', 'Faucet & tap installation', 'Pipe installation & replacement', 'Drain unclogging', 'Bathroom & kitchen fittings'],
   },
   {
     id: 'ac', name: 'Air Conditioner Services', icon: ICONS.ac,
+    image: 'images/ac.jpg',
     services: ['Air conditioner disassembly', 'Air conditioner assembly / installation', 'Filter replacement', 'Air conditioner repair', 'Air conditioner cleaning / washing', 'Relocation: disassemble & re-install at a new address'],
   },
   {
     id: 'appliance', name: 'Small Household Appliances', icon: ICONS.appliance,
+    image: 'images/appliance.jpg',
     services: ['Repair of small household appliances'],
   },
   {
     id: 'electrical', name: 'Electrical Services', icon: ICONS.electrical,
+    image: 'images/electrical.jpg',
     services: ['Electrical cable installation', 'Chandelier repair', 'Chandelier assembly', 'Chandelier installation'],
   },
   {
     id: 'boiler', name: 'Combi Boiler Services', icon: ICONS.boiler,
+    image: 'images/boiler.jpg',
     services: ['Combi boiler system installation', 'Combi boiler repair', 'Cleaning / washing of radiators & boiler system'],
   },
   {
     id: 'packing', name: 'Packing / Boxing Services', icon: ICONS.packing,
+    image: 'images/packing.jpg',
     services: ['Packing belongings into boxes', 'Preparing items for moving', 'Organizing packed items', 'Safe packaging for transportation'],
   },
 ];
+
+/* Optional photo for a slot. If the file is missing it removes itself,
+   so the icon underneath stays visible until a real photo is added.
+   Per-service photos: make a service an object { name, img } to override. */
+const photo = (src, alt) =>
+  src ? `<img class="media-photo" src="${src}" alt="${alt}" loading="lazy" onerror="this.remove()" />` : '';
 
 const pad = (n) => String(n).padStart(2, '0');
 const sheetHead = (pageNo, label = 'Available Services') =>
@@ -66,7 +79,7 @@ function coverHTML() {
       <span class="cover-deco c2"></span>
       <span class="cover-deco c3"></span>
       <div class="cover-top">
-        <span>Service Catalog</span>
+        <span>Catalog</span>
         <span class="cover-issue">Edition 01</span>
       </div>
       <div class="cover-center">
@@ -83,7 +96,7 @@ function coverHTML() {
 function tocCard(cat, num) {
   return `
     <a class="toc-card" href="#${cat.id}" data-cat="${cat.id}" aria-label="View ${cat.name} page">
-      <span class="tc-art"><span class="tc-icon">${cat.icon}</span></span>
+      <span class="tc-art">${photo(cat.image, cat.name)}<span class="tc-icon">${cat.icon}</span></span>
       <span class="tc-name">${cat.name}</span>
       <span class="tc-go">View page ${ICONS.arrow}</span>
     </a>`;
@@ -92,7 +105,7 @@ function tocCard(cat, num) {
 function tocIntroHTML() {
   return `
     <aside class="toc-intro">
-      <div class="toc-logo"><span class="brand-badge">166</span><span>Luxury<br/>Services</span></div>
+      <div class="toc-logo"><span class="brand-badge">166</span><span>Catalog</span></div>
       <div>
         <span class="page-eyebrow">Our catalog</span>
         <h2 class="toc-title">Our<br/>Services</h2>
@@ -139,9 +152,9 @@ function openerHTML(cat, pageNo, num) {
           <h2 class="opener-title">${cat.name}</h2>
         </div>
         <div class="opener-media">
+          ${photo(cat.image, cat.name)}
           <span class="opener-icon">${cat.icon}</span>
-          <span class="opener-stat"><b>166</b><span>pro team</span></span>
-          <span class="photo-tag">Photo</span>
+          <span class="opener-stat"><b>${pad(num)}</b><span>Section</span></span>
         </div>
       </div>
     </div>`;
@@ -149,15 +162,19 @@ function openerHTML(cat, pageNo, num) {
 
 /* Right page of a category spread: the services list (auto-fills, never scrolls) */
 function servicesHTML(cat, pageNo) {
-  const rows = cat.services.map((s, i) => `
+  const rows = cat.services.map((s, i) => {
+    const name = typeof s === 'string' ? s : s.name;
+    const img = (s && typeof s === 'object' && s.img) ? s.img : cat.image;
+    return `
     <li class="svc-row">
-      <span class="svc-thumb t${(i % 3) + 1}">${ICONS.camera}</span>
+      <span class="svc-thumb t${(i % 3) + 1}">${photo(img, name)}${ICONS.camera}</span>
       <span class="svc-info">
-        <span class="svc-name">${s}</span>
+        <span class="svc-name">${name}</span>
         <span class="svc-meta">By 166 professionals</span>
       </span>
       <button class="svc-pill" type="button" data-cta="request">Request</button>
-    </li>`).join('');
+    </li>`;
+  }).join('');
   return `
     <div class="page-inner sheet">
       ${sheetHead(pageNo)}
@@ -176,7 +193,7 @@ function backCoverHTML() {
         <div>${ICONS.mail}<span>hello@166services.demo</span></div>
         <div>${ICONS.clock}<span>Open daily · 08:00 – 20:00</span></div>
       </div>
-      <span class="back-foot">166 · Service Catalog · Demo Edition</span>
+      <span class="back-foot">166 · Catalog · Demo Edition</span>
     </div>`;
 }
 
@@ -271,7 +288,10 @@ function updatePosition(state) {
 
 function renderFace(el, pageIndex, extraClass = '') {
   const face = faces[pageIndex];
-  el.className = `mobile-page ${face.cls}${extraClass ? ` ${extraClass}` : ''}`;
+  // Left-hand pages (even display numbers, i.e. odd face index) bind on the
+  // right; right-hand pages bind on the left — like a real open spread.
+  const bind = pageIndex % 2 === 1 ? 'bind-right' : 'bind-left';
+  el.className = `mobile-page ${face.cls} ${bind}${extraClass ? ` ${extraClass}` : ''}`;
   el.innerHTML = face.html;
 }
 
@@ -330,8 +350,17 @@ function finalize() {
 }
 
 function mobileSlide(dir) {
+  const fromPage = mobilePage;
   mobilePage += dir;
   renderMobilePage(dir > 0 ? 'mobile-slide-next' : 'mobile-slide-prev');
+  // pan the outgoing page off-screen so it reads like the view sliding across
+  renderFace(mobileFlipLayer, fromPage, `mobile-flip-layer ${dir > 0 ? 'mobile-slideout-next' : 'mobile-slideout-prev'}`);
+  if (prefersReducedMotion()) {
+    clearMobileFlipLayer();
+    return;
+  }
+  mobileFlipLayer.addEventListener('animationend', clearMobileFlipLayer, { once: true });
+  setTimeout(clearMobileFlipLayer, SLIDE_MS + 120);
 }
 
 function mobileFlip(dir) {
@@ -351,8 +380,9 @@ function nextMobile() {
   if (animating || mobilePage >= faces.length - 1) return;
   animating = true;
   const currentPageNumber = mobilePage + 1;
-  const duration = currentPageNumber % 2 === 0 ? MOBILE_FLIP_MS : SLIDE_MS;
-  if (currentPageNumber % 2 === 0) mobileFlip(1);
+  const isFlip = currentPageNumber % 2 === 1; // odd -> even = page turn
+  const duration = isFlip ? MOBILE_FLIP_MS : SLIDE_MS;
+  if (isFlip) mobileFlip(1);
   else mobileSlide(1);
   updatePosition(current);
   updateUI();
@@ -363,8 +393,9 @@ function prevMobile() {
   if (animating || mobilePage <= 0) return;
   animating = true;
   const currentPageNumber = mobilePage + 1;
-  const duration = currentPageNumber % 2 === 1 ? MOBILE_FLIP_MS : SLIDE_MS;
-  if (currentPageNumber % 2 === 1) mobileFlip(-1);
+  const isFlip = currentPageNumber % 2 === 0; // even -> odd (going back) = page turn
+  const duration = isFlip ? MOBILE_FLIP_MS : SLIDE_MS;
+  if (isFlip) mobileFlip(-1);
   else mobileSlide(-1);
   updatePosition(current);
   updateUI();
