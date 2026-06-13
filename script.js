@@ -96,44 +96,50 @@ function coverHTML() {
 
 function tocCard(cat, num) {
   return `
-    <button class="toc-card" type="button" data-cat="${cat.id}">
-      <span class="tc-top"><span class="tc-num">${pad(num)}</span><span class="tc-icon">${cat.icon}</span></span>
+    <a class="toc-card" href="#${cat.id}" data-cat="${cat.id}" aria-label="View ${cat.name} page">
+      <span class="tc-art"><span class="tc-icon">${cat.icon}</span></span>
       <span class="tc-name">${cat.name}</span>
+      <span class="tc-desc">${cat.tagline}</span>
       <span class="tc-go">View page ${ICONS.arrow}</span>
-    </button>`;
+    </a>`;
+}
+
+function tocIntroHTML() {
+  return `
+    <aside class="toc-intro">
+      <div class="toc-logo"><span class="brand-badge">166</span><span>Luxury<br/>Services</span></div>
+      <div>
+        <span class="page-eyebrow">Our catalog</span>
+        <h2 class="toc-title">Our<br/>Services</h2>
+        <p class="toc-copy">Let’s make your home and office beautiful with trusted support.</p>
+      </div>
+      <div class="toc-note">
+        <strong>Quality</strong>
+        <span>Careful service by trained professionals.</span>
+        <strong>Fast booking</strong>
+        <span>Use “View page” to jump to any category.</span>
+      </div>
+    </aside>`;
 }
 
 function tocLeftHTML(pageNo) {
-  const cards = CATEGORIES.slice(0, 4).map((c, i) => tocCard(c, i + 1)).join('');
+  const cards = CATEGORIES.slice(0, 3).map((c, i) => tocCard(c, i + 1)).join('');
   return `
-    <div class="page-inner sheet">
+    <div class="page-inner sheet toc-sheet">
       ${sheetHead(pageNo)}
-      <div class="toc-head">
-        <span class="page-eyebrow">In this edition</span>
-        <h2 class="page-title">Table of Contents</h2>
-        <p class="page-sub">Tap a card to jump straight to a service — or flip through the catalog page by page.</p>
+      <div class="toc-layout">
+        ${tocIntroHTML()}
+        <div class="toc-grid featured">${cards}</div>
       </div>
-      <div class="toc-grid">${cards}</div>
     </div>`;
 }
 
 function tocRightHTML(pageNo) {
-  const cards = CATEGORIES.slice(4).map((c, i) => tocCard(c, i + 5)).join('');
-  const promo = `
-    <div class="toc-promo">
-      <span class="tp-eyebrow">Need a hand?</span>
-      <strong class="tp-title">Call 166</strong>
-      <span class="tp-sub">7 service categories, one trusted team.</span>
-    </div>`;
+  const cards = CATEGORIES.slice(3).map((c, i) => tocCard(c, i + 4)).join('');
   return `
-    <div class="page-inner sheet">
+    <div class="page-inner sheet toc-sheet">
       ${sheetHead(pageNo)}
-      <div class="toc-head">
-        <span class="page-eyebrow">Continued</span>
-        <h2 class="page-title">Browse Services</h2>
-        <p class="page-sub">All categories, ready when you are.</p>
-      </div>
-      <div class="toc-grid">${cards}${promo}</div>
+      <div class="toc-grid catalog">${cards}</div>
     </div>`;
 }
 
@@ -435,6 +441,7 @@ document.getElementById('goContents').addEventListener('click', () => {
 book.addEventListener('click', (e) => {
   const card = e.target.closest('[data-cat]');
   if (card) {
+    e.preventDefault();
     jumpToLeaf(leafForFace(catFaceIndex[card.getAttribute('data-cat')]));
     return;
   }
