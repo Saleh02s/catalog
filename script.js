@@ -246,6 +246,7 @@ let mobilePage = 0;       // visible face index in single-page phone mode
 let animating = false;
 const FLIP_MS = 760;
 const SLIDE_MS = 420;
+const MOBILE_FLIP_MS = 760;
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -332,22 +333,33 @@ function mobileSlide(dir) {
   renderMobilePage(dir > 0 ? 'mobile-slide-next' : 'mobile-slide-prev');
 }
 
+function mobileFlip(dir) {
+  mobilePage += dir;
+  renderMobilePage(dir > 0 ? 'mobile-flip-next' : 'mobile-flip-prev');
+}
+
 function nextMobile() {
   if (animating || mobilePage >= faces.length - 1) return;
   animating = true;
-  mobileSlide(1);
+  const currentPageNumber = mobilePage + 1;
+  const duration = currentPageNumber % 2 === 0 ? MOBILE_FLIP_MS : SLIDE_MS;
+  if (currentPageNumber % 2 === 0) mobileFlip(1);
+  else mobileSlide(1);
   updatePosition(current);
   updateUI();
-  setTimeout(finalize, (prefersReducedMotion() ? 30 : SLIDE_MS) + 40);
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : duration) + 40);
 }
 
 function prevMobile() {
   if (animating || mobilePage <= 0) return;
   animating = true;
-  mobileSlide(-1);
+  const currentPageNumber = mobilePage + 1;
+  const duration = currentPageNumber % 2 === 1 ? MOBILE_FLIP_MS : SLIDE_MS;
+  if (currentPageNumber % 2 === 1) mobileFlip(-1);
+  else mobileSlide(-1);
   updatePosition(current);
   updateUI();
-  setTimeout(finalize, (prefersReducedMotion() ? 30 : SLIDE_MS) + 40);
+  setTimeout(finalize, (prefersReducedMotion() ? 30 : duration) + 40);
 }
 
 function next() {
