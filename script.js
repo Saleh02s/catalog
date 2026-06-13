@@ -92,6 +92,7 @@ function tocCard(cat, num) {
     <a class="toc-card" href="#${cat.id}" data-cat="${cat.id}" aria-label="View ${cat.name} page">
       <span class="tc-art"><span class="tc-icon">${cat.icon}</span></span>
       <span class="tc-name">${cat.name}</span>
+      <span class="tc-desc">${cat.tagline}</span>
       <span class="tc-go">View page ${ICONS.arrow}</span>
     </a>`;
 }
