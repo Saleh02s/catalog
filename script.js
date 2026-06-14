@@ -1,7 +1,7 @@
 /* ============================================================
-   166 — Service Catalog Magazine
+   166 — Catalog
    Two-page open-spread flipbook (vanilla JS), print-catalog layout.
-   No page scrolls internally: content is split across spreads instead.
+   Localised (AZ/RU/EN), dark mode, and print-friendly.
    ============================================================ */
 
 /* ---------- Inline SVG icons (stroke style) ---------- */
@@ -22,106 +22,256 @@ const ICONS = {
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
 };
 
-/* ---------- Service catalog data (easy to edit) ---------- */
+/* ---------- UI strings (AZ / RU / EN) ---------- */
+const I18N = {
+  en: {
+    langName: "EN",
+    catalog: "Catalog",
+    contents: "Contents",
+    availableServices: "Available Services",
+    page: "Page",
+    edition: "Edition 01",
+    ourServices: "Our Services",
+    ourCatalog: "Our catalog",
+    coverTagline: "Your trusted partner for home & office services — all in one catalog.",
+    flipToOpen: "Flip to open",
+    tocCopy: "Let’s make your home and office beautiful with trusted support.",
+    noteQualityT: "Quality",
+    noteQualityD: "Careful service by trained professionals.",
+    noteBookingT: "Fast booking",
+    noteBookingD: "Use “View page” to jump to any category.",
+    viewPage: "View page",
+    category: "Category",
+    section: "Section",
+    byPros: "By 166 professionals",
+    request: "Request",
+    thankYou: "Thank you!",
+    backText: "We hope you found the service you were looking for. Reach out any time — we're happy to help.",
+    demoLine: "166 (demo line)",
+    openDaily: "Open daily · 08:00 – 20:00",
+    backFoot: "166 · Catalog · Demo Edition",
+    toastRequest: "Demo only — request flow is not connected.",
+    toastContact: "Demo only — this is a sample contact button.",
+    print: "Print",
+    previous: "Previous page",
+    next: "Next page",
+    darkMode: "Dark mode",
+    lightMode: "Light mode",
+  },
+  az: {
+    langName: "AZ",
+    catalog: "Kataloq",
+    contents: "Mündəricat",
+    availableServices: "Mövcud Xidmətlər",
+    page: "Səhifə",
+    edition: "Buraxılış 01",
+    ourServices: "Xidmətlərimiz",
+    ourCatalog: "Bizim kataloq",
+    coverTagline: "Ev və ofis xidmətləri üçün etibarlı tərəfdaşınız — hamısı bir kataloqda.",
+    flipToOpen: "Açmaq üçün vərəqləyin",
+    tocCopy: "Etibarlı dəstəklə evinizi və ofisinizi daha yaxşı edək.",
+    noteQualityT: "Keyfiyyət",
+    noteQualityD: "Təlim keçmiş peşəkarlar tərəfindən qayğılı xidmət.",
+    noteBookingT: "Sürətli sifariş",
+    noteBookingD: "İstənilən kateqoriyaya keçmək üçün “Səhifəyə bax” düyməsindən istifadə edin.",
+    viewPage: "Səhifəyə bax",
+    category: "Kateqoriya",
+    section: "Bölmə",
+    byPros: "166 peşəkarları tərəfindən",
+    request: "Sifariş et",
+    thankYou: "Təşəkkür edirik!",
+    backText: "Axtardığınız xidməti tapdığınıza ümid edirik. İstənilən vaxt bizimlə əlaqə saxlayın — kömək etməyə şadıq.",
+    demoLine: "166 (demo xətti)",
+    openDaily: "Hər gün açıq · 08:00 – 20:00",
+    backFoot: "166 · Kataloq · Demo Buraxılış",
+    toastRequest: "Yalnız demo — sifariş axını qoşulmayıb.",
+    toastContact: "Yalnız demo — bu nümunə əlaqə düyməsidir.",
+    print: "Çap et",
+    previous: "Əvvəlki səhifə",
+    next: "Növbəti səhifə",
+    darkMode: "Qaranlıq rejim",
+    lightMode: "İşıqlı rejim",
+  },
+  ru: {
+    langName: "RU",
+    catalog: "Каталог",
+    contents: "Содержание",
+    availableServices: "Доступные услуги",
+    page: "Страница",
+    edition: "Выпуск 01",
+    ourServices: "Наши услуги",
+    ourCatalog: "Наш каталог",
+    coverTagline: "Ваш надёжный партнёр для дома и офиса — всё в одном каталоге.",
+    flipToOpen: "Листайте, чтобы открыть",
+    tocCopy: "Сделаем ваш дом и офис лучше с надёжной поддержкой.",
+    noteQualityT: "Качество",
+    noteQualityD: "Аккуратный сервис от обученных специалистов.",
+    noteBookingT: "Быстрый заказ",
+    noteBookingD: "Используйте «Открыть страницу», чтобы перейти к категории.",
+    viewPage: "Открыть страницу",
+    category: "Категория",
+    section: "Раздел",
+    byPros: "Специалистами 166",
+    request: "Заказать",
+    thankYou: "Спасибо!",
+    backText: "Надеемся, вы нашли нужную услугу. Свяжитесь с нами в любое время — мы рады помочь.",
+    demoLine: "166 (демо-линия)",
+    openDaily: "Открыто ежедневно · 08:00 – 20:00",
+    backFoot: "166 · Каталог · Демо-выпуск",
+    toastRequest: "Только демо — оформление заказа не подключено.",
+    toastContact: "Только демо — это пример кнопки контакта.",
+    print: "Печать",
+    previous: "Предыдущая страница",
+    next: "Следующая страница",
+    darkMode: "Тёмная тема",
+    lightMode: "Светлая тема",
+  },
+};
+
+/* ---------- Service catalog data (localised) ---------- */
 const CATEGORIES = [
   {
-    id: 'furniture', name: 'Furniture Services', icon: ICONS.furniture,
-    image: 'images/furniture.jpg',
-    services: ['Furniture assembly', 'Furniture disassembly', 'Furniture repair', 'Furniture packing', 'Assembly of cargo furniture'],
+    id: 'furniture', icon: ICONS.furniture, image: 'images/furniture.jpg',
+    name: { en: 'Furniture Services', az: 'Mebel Xidmətləri', ru: 'Мебельные услуги' },
+    services: [
+      { en: 'Furniture assembly', az: 'Mebel yığılması', ru: 'Сборка мебели' },
+      { en: 'Furniture disassembly', az: 'Mebel sökülməsi', ru: 'Разборка мебели' },
+      { en: 'Furniture repair', az: 'Mebel təmiri', ru: 'Ремонт мебели' },
+      { en: 'Furniture packing', az: 'Mebel qablaşdırılması', ru: 'Упаковка мебели' },
+      { en: 'Assembly of cargo furniture', az: 'Yük mebelinin yığılması', ru: 'Сборка корпусной мебели' },
+    ],
   },
   {
-    id: 'plumbing', name: 'Plumbing Services', icon: ICONS.plumbing,
-    image: 'images/plumbing.jpg',
-    services: ['Leak detection & repair', 'Faucet & tap installation', 'Pipe installation & replacement', 'Drain unclogging', 'Bathroom & kitchen fittings'],
+    id: 'plumbing', icon: ICONS.plumbing, image: 'images/plumbing.jpg',
+    name: { en: 'Plumbing Services', az: 'Santexnik Xidmətləri', ru: 'Сантехнические услуги' },
+    services: [
+      { en: 'Leak detection & repair', az: 'Sızmanın aşkarlanması və təmiri', ru: 'Поиск и устранение протечек' },
+      { en: 'Faucet & tap installation', az: 'Kran quraşdırılması', ru: 'Установка смесителей и кранов' },
+      { en: 'Pipe installation & replacement', az: 'Boruların quraşdırılması və dəyişdirilməsi', ru: 'Установка и замена труб' },
+      { en: 'Drain unclogging', az: 'Kanalizasiyanın açılması', ru: 'Прочистка канализации' },
+      { en: 'Bathroom & kitchen fittings', az: 'Hamam və mətbəx avadanlığı', ru: 'Сантехника для ванной и кухни' },
+    ],
   },
   {
-    id: 'ac', name: 'Air Conditioner Services', icon: ICONS.ac,
-    image: 'images/ac.jpg',
-    services: ['Air conditioner disassembly', 'Air conditioner assembly / installation', 'Filter replacement', 'Air conditioner repair', 'Air conditioner cleaning / washing', 'Relocation: disassemble & re-install at a new address'],
+    id: 'ac', icon: ICONS.ac, image: 'images/ac.jpg',
+    name: { en: 'Air Conditioner Services', az: 'Kondisioner Xidmətləri', ru: 'Услуги по кондиционерам' },
+    services: [
+      { en: 'Air conditioner disassembly', az: 'Kondisionerin sökülməsi', ru: 'Демонтаж кондиционера' },
+      { en: 'Air conditioner assembly / installation', az: 'Kondisionerin yığılması / quraşdırılması', ru: 'Монтаж / установка кондиционера' },
+      { en: 'Filter replacement', az: 'Filtrin dəyişdirilməsi', ru: 'Замена фильтров' },
+      { en: 'Air conditioner repair', az: 'Kondisionerin təmiri', ru: 'Ремонт кондиционера' },
+      { en: 'Air conditioner cleaning / washing', az: 'Kondisionerin təmizlənməsi / yuyulması', ru: 'Чистка / мойка кондиционера' },
+      { en: 'Relocation: disassemble & re-install at a new address', az: 'Köçürmə: sökmə və yeni ünvanda quraşdırma', ru: 'Перенос: демонтаж и установка по новому адресу' },
+    ],
   },
   {
-    id: 'appliance', name: 'Small Household Appliances', icon: ICONS.appliance,
-    image: 'images/appliance.jpg',
-    services: ['Repair of small household appliances'],
+    id: 'appliance', icon: ICONS.appliance, image: 'images/appliance.jpg',
+    name: { en: 'Small Household Appliances', az: 'Kiçik Məişət Texnikası', ru: 'Мелкая бытовая техника' },
+    services: [
+      { en: 'Repair of small household appliances', az: 'Kiçik məişət texnikasının təmiri', ru: 'Ремонт мелкой бытовой техники' },
+    ],
   },
   {
-    id: 'electrical', name: 'Electrical Services', icon: ICONS.electrical,
-    image: 'images/electrical.jpg',
-    services: ['Electrical cable installation', 'Chandelier repair', 'Chandelier assembly', 'Chandelier installation'],
+    id: 'electrical', icon: ICONS.electrical, image: 'images/electrical.jpg',
+    name: { en: 'Electrical Services', az: 'Elektrik Xidmətləri', ru: 'Электромонтажные услуги' },
+    services: [
+      { en: 'Electrical cable installation', az: 'Elektrik kabelinin çəkilməsi', ru: 'Прокладка электрического кабеля' },
+      { en: 'Chandelier repair', az: 'Çilçırağın təmiri', ru: 'Ремонт люстры' },
+      { en: 'Chandelier assembly', az: 'Çilçırağın yığılması', ru: 'Сборка люстры' },
+      { en: 'Chandelier installation', az: 'Çilçırağın quraşdırılması', ru: 'Установка люстры' },
+    ],
   },
   {
-    id: 'boiler', name: 'Combi Boiler Services', icon: ICONS.boiler,
-    image: 'images/boiler.jpg',
-    services: ['Combi boiler system installation', 'Combi boiler repair', 'Cleaning / washing of radiators & boiler system'],
+    id: 'boiler', icon: ICONS.boiler, image: 'images/boiler.jpg',
+    name: { en: 'Combi Boiler Services', az: 'Kombi Xidmətləri', ru: 'Услуги по котлам (комби)' },
+    services: [
+      { en: 'Combi boiler system installation', az: 'Kombi sisteminin quraşdırılması', ru: 'Установка системы котла (комби)' },
+      { en: 'Combi boiler repair', az: 'Kombinin təmiri', ru: 'Ремонт котла (комби)' },
+      { en: 'Cleaning / washing of radiators & boiler system', az: 'Radiatorların və kombi sisteminin təmizlənməsi / yuyulması', ru: 'Чистка / промывка радиаторов и системы котла' },
+    ],
   },
   {
-    id: 'packing', name: 'Packing / Boxing Services', icon: ICONS.packing,
-    image: 'images/packing.jpg',
-    services: ['Packing belongings into boxes', 'Preparing items for moving', 'Organizing packed items', 'Safe packaging for transportation'],
+    id: 'packing', icon: ICONS.packing, image: 'images/packing.jpg',
+    name: { en: 'Packing / Boxing Services', az: 'Qablaşdırma Xidmətləri', ru: 'Услуги упаковки' },
+    services: [
+      { en: 'Packing belongings into boxes', az: 'Əşyaların qutulara yığılması', ru: 'Упаковка вещей в коробки' },
+      { en: 'Preparing items for moving', az: 'Əşyaların köçürməyə hazırlanması', ru: 'Подготовка вещей к переезду' },
+      { en: 'Organizing packed items', az: 'Qablaşdırılmış əşyaların nizamlanması', ru: 'Организация упакованных вещей' },
+      { en: 'Safe packaging for transportation', az: 'Daşınma üçün təhlükəsiz qablaşdırma', ru: 'Безопасная упаковка для перевозки' },
+    ],
   },
 ];
 
+/* ---------- Language / theme state ---------- */
+const SUPPORTED_LANGS = ['az', 'ru', 'en'];
+let LANG = (() => {
+  const saved = localStorage.getItem('catalog-lang');
+  if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  return SUPPORTED_LANGS.includes(nav) ? nav : 'en';
+})();
+
+const tr = (v) => (v && typeof v === 'object' && !Array.isArray(v) && v[LANG] !== undefined) ? v[LANG] : v;
+const t = (key) => (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || '';
+
 /* Optional photo for a slot. If the file is missing it removes itself,
-   so the icon underneath stays visible until a real photo is added.
-   Per-service photos: make a service an object { name, img } to override. */
+   so the icon underneath stays visible until a real photo is added. */
 const photo = (src, alt) =>
   src ? `<img class="media-photo" src="${src}" alt="${alt}" loading="lazy" onerror="this.remove()" />` : '';
 
 const pad = (n) => String(n).padStart(2, '0');
-const sheetHead = (pageNo, label = 'Available Services') =>
-  `<div class="sheet-head"><span class="sh-left">${label}</span><span class="sh-right">Page ${pad(pageNo)}</span></div>`;
+const sheetHead = (pageNo, label) =>
+  `<div class="sheet-head"><span class="sh-left">${label || t('availableServices')}</span><span class="sh-right">${t('page')} ${pad(pageNo)}</span></div>`;
 
 /* ---------- Face (single page) HTML builders ---------- */
 function coverHTML() {
   return `
     <div class="page-inner cover-inner">
-      <span class="cover-deco c1"></span>
-      <span class="cover-deco c2"></span>
-      <span class="cover-deco c3"></span>
       <div class="cover-top">
-        <span>Catalog</span>
-        <span class="cover-issue">Edition 01</span>
+        <span>${t('catalog')}</span>
+        <span class="cover-issue">${t('edition')}</span>
       </div>
       <div class="cover-center">
         <h1 class="cover-number">166</h1>
-        <h2 class="cover-services">Our Services</h2>
-        <p class="cover-tagline">Your trusted partner for home &amp; office services — all in one catalog.</p>
+        <h2 class="cover-services">${t('ourServices')}</h2>
+        <p class="cover-tagline">${t('coverTagline')}</p>
       </div>
       <div class="cover-bottom">
-        <span class="cover-hint">Flip to open ${ICONS.hand}</span>
+        <span class="cover-hint">${t('flipToOpen')} ${ICONS.hand}</span>
       </div>
     </div>`;
 }
 
-function tocCard(cat, num) {
+function tocCard(cat) {
+  const name = tr(cat.name);
   return `
-    <a class="toc-card" href="#${cat.id}" data-cat="${cat.id}" aria-label="View ${cat.name} page">
-      <span class="tc-art">${photo(cat.image, cat.name)}<span class="tc-icon">${cat.icon}</span></span>
-      <span class="tc-name">${cat.name}</span>
-      <span class="tc-go">View page ${ICONS.arrow}</span>
+    <a class="toc-card" href="#${cat.id}" data-cat="${cat.id}" aria-label="${t('viewPage')} — ${name}">
+      <span class="tc-art">${photo(cat.image, name)}<span class="tc-icon">${cat.icon}</span></span>
+      <span class="tc-name">${name}</span>
+      <span class="tc-go">${t('viewPage')} ${ICONS.arrow}</span>
     </a>`;
 }
 
 function tocIntroHTML() {
   return `
     <aside class="toc-intro">
-      <div class="toc-logo"><span class="brand-badge">166</span><span>Catalog</span></div>
+      <div class="toc-logo"><span class="brand-badge">166</span><span>${t('catalog')}</span></div>
       <div>
-        <span class="page-eyebrow">Our catalog</span>
-        <h2 class="toc-title">Our<br/>Services</h2>
-        <p class="toc-copy">Let’s make your home and office beautiful with trusted support.</p>
+        <span class="page-eyebrow">${t('ourCatalog')}</span>
+        <h2 class="toc-title">${t('ourServices')}</h2>
+        <p class="toc-copy">${t('tocCopy')}</p>
       </div>
       <div class="toc-note">
-        <strong>Quality</strong>
-        <span>Careful service by trained professionals.</span>
-        <strong>Fast booking</strong>
-        <span>Use “View page” to jump to any category.</span>
+        <strong>${t('noteQualityT')}</strong>
+        <span>${t('noteQualityD')}</span>
+        <strong>${t('noteBookingT')}</strong>
+        <span>${t('noteBookingD')}</span>
       </div>
     </aside>`;
 }
 
 function tocLeftHTML(pageNo) {
-  const cards = CATEGORIES.slice(0, 3).map((c, i) => tocCard(c, i + 1)).join('');
+  const cards = CATEGORIES.slice(0, 3).map((c) => tocCard(c)).join('');
   return `
     <div class="page-inner sheet toc-sheet">
       ${sheetHead(pageNo)}
@@ -133,7 +283,7 @@ function tocLeftHTML(pageNo) {
 }
 
 function tocRightHTML(pageNo) {
-  const cards = CATEGORIES.slice(3).map((c, i) => tocCard(c, i + 4)).join('');
+  const cards = CATEGORIES.slice(3).map((c) => tocCard(c)).join('');
   return `
     <div class="page-inner sheet toc-sheet">
       ${sheetHead(pageNo)}
@@ -143,18 +293,19 @@ function tocRightHTML(pageNo) {
 
 /* Left page of a category spread: the "opener" / hero */
 function openerHTML(cat, pageNo, num) {
+  const name = tr(cat.name);
   return `
     <div class="page-inner sheet">
       ${sheetHead(pageNo)}
       <div class="opener">
         <div class="opener-titles">
-          <span class="page-eyebrow">Category ${pad(num)} · 166</span>
-          <h2 class="opener-title">${cat.name}</h2>
+          <span class="page-eyebrow">${t('category')} ${pad(num)} · 166</span>
+          <h2 class="opener-title">${name}</h2>
         </div>
         <div class="opener-media">
-          ${photo(cat.image, cat.name)}
+          ${photo(cat.image, name)}
           <span class="opener-icon">${cat.icon}</span>
-          <span class="opener-stat"><b>${pad(num)}</b><span>Section</span></span>
+          <span class="opener-stat"><b>${pad(num)}</b><span>${t('section')}</span></span>
         </div>
       </div>
     </div>`;
@@ -163,16 +314,16 @@ function openerHTML(cat, pageNo, num) {
 /* Right page of a category spread: the services list (auto-fills, never scrolls) */
 function servicesHTML(cat, pageNo) {
   const rows = cat.services.map((s, i) => {
-    const name = typeof s === 'string' ? s : s.name;
-    const img = (s && typeof s === 'object' && s.img) ? s.img : cat.image;
+    const name = tr(s);
+    const img = (s && s.img) ? s.img : cat.image;
     return `
     <li class="svc-row">
       <span class="svc-thumb t${(i % 3) + 1}">${photo(img, name)}${ICONS.camera}</span>
       <span class="svc-info">
         <span class="svc-name">${name}</span>
-        <span class="svc-meta">By 166 professionals</span>
+        <span class="svc-meta">${t('byPros')}</span>
       </span>
-      <button class="svc-pill" type="button" data-cta="request">Request</button>
+      <button class="svc-pill" type="button" data-cta="request">${t('request')}</button>
     </li>`;
   }).join('');
   return `
@@ -186,81 +337,86 @@ function backCoverHTML() {
   return `
     <div class="page-inner back-inner">
       <span class="brand-badge">166</span>
-      <h2>Thank you!</h2>
-      <p>We hope you found the service you were looking for. Reach out any time — we're happy to help.</p>
+      <h2>${t('thankYou')}</h2>
+      <p>${t('backText')}</p>
       <div class="back-contact">
-        <div>${ICONS.phone}<span>166 (demo line)</span></div>
+        <div>${ICONS.phone}<span>${t('demoLine')}</span></div>
         <div>${ICONS.mail}<span>hello@166services.demo</span></div>
-        <div>${ICONS.clock}<span>Open daily · 08:00 – 20:00</span></div>
+        <div>${ICONS.clock}<span>${t('openDaily')}</span></div>
       </div>
-      <span class="back-foot">166 · Catalog · Demo Edition</span>
+      <span class="back-foot">${t('backFoot')}</span>
     </div>`;
 }
 
-/* ---------- Build ordered faces (pairs become open spreads) ---------- */
-const faces = [];
-const pageNoOf = (i) => i + 1; // display page number for face index i
-
-faces.push({ cls: 'cover', html: coverHTML() });
-faces.push({ cls: 'toc', html: tocLeftHTML(pageNoOf(faces.length)) });
-faces.push({ cls: 'toc', html: tocRightHTML(pageNoOf(faces.length)) });
-
-const catFaceIndex = {}; // category id -> opener (left) face index
-CATEGORIES.forEach((cat, i) => {
-  catFaceIndex[cat.id] = faces.length;
-  faces.push({ cls: 'service opener-face', html: openerHTML(cat, pageNoOf(faces.length), i + 1) });
-  faces.push({ cls: 'service services-face', html: servicesHTML(cat, pageNoOf(faces.length)) });
-});
-
-faces.push({ cls: 'backcover', html: backCoverHTML() });
-if (faces.length % 2 !== 0) faces.push({ cls: 'blank', html: '<div class="page-inner"></div>' });
-
-const LEAF_COUNT = faces.length / 2;
-
-/* ---------- Render leaves ---------- */
+/* ---------- Persistent DOM refs ---------- */
 const book = document.getElementById('book');
-const leaves = [];
-
-for (let i = 0; i < LEAF_COUNT; i++) {
-  const leaf = document.createElement('div');
-  leaf.className = 'leaf';
-
-  const front = document.createElement('div');
-  front.className = `leaf-face front ${faces[2 * i].cls}`;
-  front.innerHTML = faces[2 * i].html;
-
-  const back = document.createElement('div');
-  back.className = `leaf-face back ${faces[2 * i + 1].cls}`;
-  back.innerHTML = faces[2 * i + 1].html;
-
-  leaf.appendChild(front);
-  leaf.appendChild(back);
-  book.appendChild(leaf);
-  leaves.push(leaf);
-}
-
 const mobileView = document.createElement('div');
 mobileView.className = 'mobile-page';
-book.appendChild(mobileView);
-
 const mobileFlipLayer = document.createElement('div');
 mobileFlipLayer.className = 'mobile-page mobile-flip-layer';
-book.appendChild(mobileFlipLayer);
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const pageNow = document.getElementById('pageNow');
+const pageTotal = document.getElementById('pageTotal');
+
+/* ---------- Build / rebuild the book from data ---------- */
+const pageNoOf = (i) => i + 1;
+let faces = [];
+let leaves = [];
+let catFaceIndex = {};
+let LEAF_COUNT = 0;
+let N = 0;
+
+function buildBook() {
+  faces = [];
+  faces.push({ cls: 'cover', html: coverHTML() });
+  faces.push({ cls: 'toc', html: tocLeftHTML(pageNoOf(faces.length)) });
+  faces.push({ cls: 'toc', html: tocRightHTML(pageNoOf(faces.length)) });
+
+  catFaceIndex = {};
+  CATEGORIES.forEach((cat, i) => {
+    catFaceIndex[cat.id] = faces.length;
+    faces.push({ cls: 'service opener-face', html: openerHTML(cat, pageNoOf(faces.length), i + 1) });
+    faces.push({ cls: 'service services-face', html: servicesHTML(cat, pageNoOf(faces.length)) });
+  });
+
+  faces.push({ cls: 'backcover', html: backCoverHTML() });
+  if (faces.length % 2 !== 0) faces.push({ cls: 'blank', html: '<div class="page-inner"></div>' });
+
+  LEAF_COUNT = faces.length / 2;
+  N = LEAF_COUNT;
+
+  book.innerHTML = '';
+  leaves = [];
+  for (let i = 0; i < LEAF_COUNT; i++) {
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+
+    const front = document.createElement('div');
+    front.className = `leaf-face front ${faces[2 * i].cls}`;
+    front.innerHTML = faces[2 * i].html;
+
+    const back = document.createElement('div');
+    back.className = `leaf-face back ${faces[2 * i + 1].cls}`;
+    back.innerHTML = faces[2 * i + 1].html;
+
+    leaf.appendChild(front);
+    leaf.appendChild(back);
+    book.appendChild(leaf);
+    leaves.push(leaf);
+  }
+  book.appendChild(mobileView);
+  book.appendChild(mobileFlipLayer);
+}
 
 /* ---------- Flipbook engine ---------- */
-const N = LEAF_COUNT;
 let current = 0;          // flipped leaves (0 = closed on cover)
 let mobilePage = 0;       // visible face index in single-page phone mode
 let animating = false;
 const FLIP_MS = 760;
 const SLIDE_MS = 420;
 const MOBILE_FLIP_MS = 760;
-
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const pageNow = document.getElementById('pageNow');
-const pageTotal = document.getElementById('pageTotal');
-pageTotal.textContent = String(N + 1);
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -314,15 +470,22 @@ function syncMobileFaces() {
 }
 
 function updateUI() {
+  const totalPages = faces.length;
   if (isSinglePageView()) {
     pageNow.textContent = String(mobilePage + 1);
-    pageTotal.textContent = String(faces.length);
+    pageTotal.textContent = String(totalPages);
     prevBtn.disabled = mobilePage <= 0;
     nextBtn.disabled = mobilePage >= faces.length - 1;
     return;
   }
-  pageNow.textContent = String(current + 1);
-  pageTotal.textContent = String(N + 1);
+  // Desktop shows a two-page spread, so report the real printed page numbers
+  // of the visible pages (matching the "Page NN" labels), not the spread index.
+  let label;
+  if (current <= 0) label = '1';
+  else if (current >= N) label = String(2 * current);
+  else label = `${2 * current}\u2013${2 * current + 1}`;
+  pageNow.textContent = label;
+  pageTotal.textContent = String(totalPages);
   prevBtn.disabled = current <= 0;
   nextBtn.disabled = current >= N;
 }
@@ -447,12 +610,86 @@ function jumpToLeaf(target) {
 
 const leafForFace = (faceIndex) => Math.ceil(faceIndex / 2);
 
-/* ---------- Controls wiring ---------- */
+/* ---------- Language + theme ---------- */
+function applyLeafState() {
+  leaves.forEach((l, i) => l.classList.toggle('flipped', i < current));
+}
+
+function refreshView() {
+  clearMobileFlipLayer();
+  if (isSinglePageView()) syncMobileFaces();
+  else { applyLeafState(); updateZ(); }
+  updatePosition(current);
+  updateUI();
+}
+
+function updateStaticText() {
+  document.documentElement.lang = LANG;
+  const set = (sel, txt) => { const el = document.querySelector(sel); if (el) el.textContent = txt; };
+  set('.brand-text', t('catalog'));
+  set('#goContents .label', t('contents'));
+  prevBtn.setAttribute('aria-label', t('previous'));
+  nextBtn.setAttribute('aria-label', t('next'));
+  updateThemeButton();
+  document.querySelectorAll('.lang-btn').forEach((b) => {
+    const active = b.dataset.lang === LANG;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function setLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang) || lang === LANG) {
+    updateStaticText();
+    return;
+  }
+  LANG = lang;
+  localStorage.setItem('catalog-lang', lang);
+  const savedCurrent = current;
+  const savedMobile = mobilePage;
+  buildBook();
+  current = Math.min(savedCurrent, N);
+  mobilePage = Math.min(savedMobile, faces.length - 1);
+  refreshView();
+  updateStaticText();
+}
+
+let THEME = (() => {
+  const saved = localStorage.getItem('catalog-theme');
+  if (saved === 'dark' || saved === 'light') return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+})();
+
+function updateThemeButton() {
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  const goingDark = THEME === 'light';
+  btn.setAttribute('aria-label', goingDark ? t('darkMode') : t('lightMode'));
+  btn.setAttribute('title', goingDark ? t('darkMode') : t('lightMode'));
+}
+
+function applyTheme(theme) {
+  THEME = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('catalog-theme', theme);
+  updateThemeButton();
+}
+
+/* ---------- Init ---------- */
+buildBook();
+applyTheme(THEME);
+
 prevBtn.addEventListener('click', prev);
 nextBtn.addEventListener('click', next);
 document.getElementById('goContents').addEventListener('click', () => {
   jumpToLeaf(leafForFace(faces.findIndex((f) => f.cls === 'toc')));
 });
+
+document.querySelectorAll('.lang-btn').forEach((b) => {
+  b.addEventListener('click', () => setLanguage(b.dataset.lang));
+});
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) themeToggle.addEventListener('click', () => applyTheme(THEME === 'dark' ? 'light' : 'dark'));
 
 book.addEventListener('click', (e) => {
   const card = e.target.closest('[data-cat]');
@@ -463,9 +700,7 @@ book.addEventListener('click', (e) => {
   }
   const cta = e.target.closest('[data-cta]');
   if (cta) {
-    showToast(cta.getAttribute('data-cta') === 'request'
-      ? 'Demo only — request flow is not connected.'
-      : 'Demo only — this is a sample contact button.');
+    showToast(cta.getAttribute('data-cta') === 'request' ? t('toastRequest') : t('toastContact'));
     return;
   }
   const face = e.target.closest('.leaf-face, .mobile-page');
@@ -475,9 +710,9 @@ book.addEventListener('click', (e) => {
     if (e.clientX < rect.left + rect.width / 2) prev(); else next();
     return;
   }
-  if (current <= 0) { next(); return; }
-  if (current >= N) { prev(); return; }
-  if (e.clientX < rect.left + rect.width / 2) prev(); else next();
+  // Desktop: only the closed cover flips open on click. Inner spreads are turned
+  // with the arrow buttons / keyboard, so reading clicks never change the page.
+  if (current <= 0) next();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -516,8 +751,6 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
 }
 
-/* ---------- Init ---------- */
-if (isSinglePageView()) syncMobileFaces();
-else updateZ();
-updatePosition(current);
-updateUI();
+/* ---------- First paint ---------- */
+updateStaticText();
+refreshView();
