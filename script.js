@@ -710,9 +710,9 @@ book.addEventListener('click', (e) => {
     if (e.clientX < rect.left + rect.width / 2) prev(); else next();
     return;
   }
-  // Desktop: only the closed cover flips open on click. Inner spreads are turned
-  // with the arrow buttons / keyboard, so reading clicks never change the page.
-  if (current <= 0) next();
+  if (current <= 0) { next(); return; }
+  if (current >= N) { prev(); return; }
+  if (e.clientX < rect.left + rect.width / 2) prev(); else next();
 });
 
 document.addEventListener('keydown', (e) => {
